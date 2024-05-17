@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Client</title>
+</head>
+<body>
+    <input type="text" id="message" placeholder="Type your message...">
+    <button onclick="sendMessage()">Enviar</button>
+    <ul id="chat"></ul>
+
+    <script>
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('message');
+        const ws = new WebSocket('ws://localhost:3000');
+
+        ws.onopen = function () {
+            console.log('Connected to WebSocket server');
+        };
+
+        ws.onmessage = function (event) {
+            const message = event.data;
+            if (typeof message === 'string') {
+                const li = document.createElement('li');
+                li.textContent = message;
+                chat.appendChild(li);
+            } else {
+                // Handle Blob messages
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const text = reader.result;
+                    const li = document.createElement('li');
+                    li.textContent = text;
+                    chat.appendChild(li);
+                };
+                reader.readAsText(message);
+            }
+        };
+
+        function sendMessage() {
+            const message = messageInput.value;
+            ws.send(message);
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>
